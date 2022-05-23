@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const app = express();
 
@@ -19,6 +19,7 @@ async function run() {
         const database = client.db("manufacturehut");
         const productCollection = database.collection("products");
         const userCollection = database.collection("users");
+        const orderCollection = database.collection("orders");
 
         app.get("/products", async (req, res) => {
             const query = {}
@@ -37,6 +38,33 @@ async function run() {
             const result = await userCollection.updateOne(query, updateDoc, options);
             const accessToken = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
             res.send({ result, accessToken });
+        });
+
+        app.get("/product/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await productCollection.findOne(query);
+            res.send(result);
+        });
+
+
+        app.post("/order", async (req, res) => {
+            const body = req.body;
+            const result = await orderCollection.insertOne(body);
+            res.send(result);
+        });
+
+        app.put("/updateQuantity/:id", async (req, res) => {
+            const id = req.params.id;
+            const quantity = req.query.quantity;
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $inc: {
+                    stock: -quantity,
+                },
+            }
+            const result = await productCollection.updateOne(filter, updateDoc);
+            res.send(result);
         })
     }
     finally {
