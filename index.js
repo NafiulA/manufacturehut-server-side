@@ -99,6 +99,24 @@ async function run() {
             const query = {};
             const result = await userCollection.find(query).toArray();
             res.send(result);
+        });
+
+        app.get("/user/:email", verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        });
+
+        app.put("/profile/:email", verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const body = req.body;
+            const query = { email: email };
+            const updateDoc = {
+                $set: body
+            };
+            const result = await userCollection.updateOne(query, updateDoc);
+            res.send(result);
         })
 
         app.get("/admin/:email", async (req, res) => {
