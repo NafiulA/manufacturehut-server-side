@@ -83,9 +83,21 @@ async function run() {
             res.send(result);
         });
 
+        app.post("/product", verifyJWT, verifyAdmin, async (req, res) => {
+            const body = req.body;
+            const result = await productCollection.insertOne(body);
+            res.send(result);
+        })
+
         app.post("/order", verifyJWT, async (req, res) => {
             const body = req.body;
             const result = await orderCollection.insertOne(body);
+            res.send(result);
+        });
+
+        app.get("/order", verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const result = await orderCollection.find(query).toArray();
             res.send(result);
         });
 
@@ -186,6 +198,18 @@ async function run() {
             const result = await orderCollection.updateOne(query, updateDoc);
             res.send(result);
         });
+
+        app.put("/ship/:id", verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    shipment: "shipped"
+                }
+            };
+            const result = await orderCollection.updateOne(query, updateDoc);
+            res.send(result);
+        })
 
         app.delete("/order/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
