@@ -37,6 +37,7 @@ async function run() {
         const productCollection = database.collection("products");
         const userCollection = database.collection("users");
         const orderCollection = database.collection("orders");
+        const reviewCollection = database.collection("reviews");
 
         async function verifyAdmin(req, res, next) {
             const requester = req.decoded.email;
@@ -186,6 +187,12 @@ async function run() {
             const result = await orderCollection.deleteOne(query);
             res.send(result);
         });
+
+        app.post("/review", verifyJWT, async (req, res) => {
+            const body = req.body;
+            const result = await reviewCollection.insertOne(body);
+            res.send(result);
+        })
 
     }
     finally {
